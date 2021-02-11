@@ -1,0 +1,377 @@
+Index: src/test/java/SberTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/SberTest.java	(date 1613081967178)
++++ src/test/java/SberTest.java	(date 1613081967178)
+@@ -0,0 +1,155 @@
++import org.junit.*;
++import org.openqa.selenium.*;
++import org.openqa.selenium.chrome.ChromeDriver;
++import org.openqa.selenium.support.ui.ExpectedConditions;
++import org.openqa.selenium.support.ui.Wait;
++import org.openqa.selenium.support.ui.WebDriverWait;
++import java.util.concurrent.TimeUnit;
++import static org.junit.Assert.assertEquals;
++
++public class SberTest {
++
++    private WebDriver driver;
++    private String Url;
++
++    @Before
++    public void setUp() throws Exception {
++        System.setProperty("webdriver.gecko.driver", "C:\\Users\\Deri\\IdeaProjects\\UdemyMaven\\Drivers\\geckodriver.exe");
++        System.setProperty("webdriver.chrome.driver", "C:\\Users\\Deri\\IdeaProjects\\UdemyMaven\\Drivers\\chromedriver.exe");
++        driver = new ChromeDriver();
++        //driver = new FirefoxDriver();
++        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
++        driver.manage().window().maximize();
++        Url = "http://www.sberbank.ru/ru/person";
++    }
++
++    @Test
++
++    public void testInsurance() throws Exception {
++        driver.get(Url);
++        driver.findElement(By.xpath("//li[@class='kitt-top-menu__item kitt-top-menu__item_first']/a[contains(text(),'Страхование')]")).click();
++        driver.findElement(By.xpath("//a[contains(text(),'Перейти в каталог')]")).click();
++        for (String windowHandle : driver.getWindowHandles()) {
++            driver.switchTo().window(windowHandle);
++        }
++// Скрол страницы при помощи джаваскрипт
++        JavascriptExecutor jse = (JavascriptExecutor) driver;
++        jse.executeScript("window.scrollBy(0,1000)", "");//скрол страницы
++        WebElement findElement = driver.findElement(By.xpath("//div[@class='uc-full__block uc-full__block_header']//child::a[contains(@href, '/life/travel')]"));
++        findElement.click();
++        if (driver.findElements(By.xpath("//*[text()='Страхование путешественников']")).size() > 0)
++            System.out.println("Элемент 'Страхование путешественников' найден");
++        else System.out.println("Элемент 'Страхование путешественников' не представлен");
++        assertEquals("Страхование путешественников",
++                driver.findElement(By.xpath("//*[text()='Страхование путешественников']")).getText());
++
++        driver.findElement(By.xpath("//span[contains(text(),'Оформить онлайн')]")).click();
++        Wait<WebDriver> wait = new WebDriverWait(driver, 10, 1000);
++        wait.until(ExpectedConditions.visibilityOf(
++                driver.findElement(By.xpath("//*[text()='Минимальная']"))));
++           /*
++            driver.findElement(By.xpath("//div[contains(text(),'РФ и страны СНГ')]")).click();
++            driver.findElement(By.xpath("//a[contains(text(),'Шенген и страны Совета Европы, кроме РФ')]")).click();//Проверка кейса else
++            */
++        if (driver.findElements(By.xpath("//div[@class='online-card-program selected']/*[text()='Минимальная']")).size() > 0)
++            System.out.println("Выбран полис за минимальную стоимость");
++        else {
++            if (driver.findElements(By.xpath("//div[@class='online-card-program']/*[text()='Минимальная']")).size() > 0) {
++                driver.findElement(By.xpath("//div[@class='online-card-program']/*[text()='Минимальная']")).click();
++            }
++        }
++        driver.findElement(By.xpath("//button[contains(text(),'Оформить')]")).click();
++
++        wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.xpath("//div[@class='container']"))));
++
++// Заполнение полей "Застрахованные c проверкой внесенных данных."
++        WebElement surnameVZR = driver.findElement(By.id("surname_vzr_ins_0"));
++        WebElement nameVZR = driver.findElement(By.id("name_vzr_ins_0"));
++        WebElement dateVZR = driver.findElement(By.id("birthDate_vzr_ins_0"));
++
++        fillField(surnameVZR, "Баширов");
++        fillField(nameVZR, "Кирилл");
++        fillField(dateVZR, "02021990");
++
++        Assert.assertEquals("Фамилия застрахованного введена некорректно","Баширов",surnameVZR .getAttribute("value"));
++        Assert.assertEquals("Имя застрахованного введена некорректно","Кирилл",nameVZR .getAttribute("value"));
++        Assert.assertEquals("Дата рождения застрахованного введена некорректно","02.02.1990",dateVZR .getAttribute("value"));
++
++// Заполнение полей "Страхователь c проверкой внесенных данных."
++        WebElement person_lastName = driver.findElement(By.id("person_lastName"));
++        WebElement person_firstName = driver.findElement(By.id("person_firstName"));
++        WebElement person_middleName = driver.findElement(By.id("person_middleName"));
++        WebElement person_birthDate = driver.findElement(By.id("person_birthDate"));
++
++        driver.findElement(By.id("person_firstName")).click();
++        fillField(person_lastName, "Иванов");
++        fillField(person_firstName, "Иван");
++        fillField(person_birthDate, "02021990");
++        person_middleName.click();
++        fillField(person_middleName, "Иванович");
++
++
++
++        Assert.assertEquals("Фамилия страхователя введена некорректно","Иванов",person_lastName .getAttribute("value"));
++        Assert.assertEquals("Имя страхователя введена некорректно","Иван",person_firstName .getAttribute("value"));
++        Assert.assertEquals("Имя отчества страхователя введено некорректно","Иванович",person_middleName .getAttribute("value"));
++        Assert.assertEquals("Дата рождения страхователя введена некорректно","02.02.1990",person_birthDate .getAttribute("value"));
++
++//Выбрать пол
++        WebElement btn = driver.findElement((By.xpath("//label[contains(text(),'Женский')]")));
++        btn.click();
++
++// Заполнение полей "Паспортные данные" c более короткой версией проверки полей.
++
++        fillFields(By.id("passportSeries"), "5555");
++        fillFields(By.id("passportNumber"), "123456");
++        fillFields(By.id("documentDate"), "02021990");
++        driver.findElement(By.id("documentIssue")).click();
++        fillFields(By.id("documentIssue"), "Тест");
++
++        assertEquals("5555", driver.findElement(By.id("passportSeries")).getAttribute("value"));
++        assertEquals("123456", driver.findElement(By.id("passportNumber")).getAttribute("value"));
++        assertEquals("02.02.2010", driver.findElement(By.id("documentDate")).getAttribute("value"));
++        assertEquals("Тест", driver.findElement(By.id("documentIssue")).getAttribute("value"));
++
++
++// Прокрутить к вебэлементу "продолжить" и нажать на него.
++        WebElement btnContinue = driver.findElement(By.xpath("//*[contains(text(),'Продолжить')]"));
++        goElement(btnContinue);
++        btnContinue.click();
++
++
++        assertEquals("Поле не заполнено.",
++                driver.findElement(By.xpath("//span[contains(text(),'Поле не заполнено.')]")).getText());
++
++
++// Найти ошибку "При заполнении данных произошла ошибка"
++        WebElement textErrorMessage = driver.findElement(By.xpath("//div[@class='alert-form alert-form-error']"));
++        wait.until(ExpectedConditions.visibilityOf(textErrorMessage));
++        Assert.assertEquals("При заполнении данных произошла ошибка", textErrorMessage.getText());
++    }
++
++    @After
++   public void tearDown() throws Exception {
++        driver.quit();
++    }
++
++// Методы отчистки и заполнения текстовых полей
++    private void fillField(WebElement element, String value){
++        element.clear();
++        element.sendKeys(value);
++    }
++    private void fillFields(By locator, String value) {
++        driver.findElement(locator).clear();
++        driver.findElement(locator).sendKeys(value);
++    }
++// Метод скрола к элементу (Джаваскрипт)
++    private void goElement(WebElement element) {
++            ((JavascriptExecutor) driver).executeScript("return arguments[0].scrollIntoView(true);", element);
++    }
++
++}
++
++
++
++
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/compiler.xml	(date 1613063985440)
++++ .idea/compiler.xml	(date 1613063985440)
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="CompilerConfiguration">
++    <annotationProcessing>
++      <profile name="Maven default annotation processors profile" enabled="true">
++        <sourceOutputDir name="target/generated-sources/annotations" />
++        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
++        <outputRelativeToContentRoot value="true" />
++        <module name="ApplineSelenium" />
++      </profile>
++    </annotationProcessing>
++  </component>
++</project>
+\ No newline at end of file
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(date 1612613531133)
++++ pom.xml	(date 1612613531133)
+@@ -0,0 +1,23 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://maven.apache.org/POM/4.0.0"
++         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++    <modelVersion>4.0.0</modelVersion>
++
++    <groupId>org.example</groupId>
++    <artifactId>pageobjectseleniumtest</artifactId>
++    <version>1.0-SNAPSHOT</version>
++    <dependencies>
++        <dependency>
++            <groupId>org.seleniumhq.selenium</groupId>
++            <artifactId>selenium-java</artifactId>
++            <version>3.141.59</version>
++        </dependency>
++        <dependency>
++            <groupId>junit</groupId>
++            <artifactId>junit</artifactId>
++            <version>4.12</version>
++            <scope>test</scope>
++        </dependency>
++    </dependencies>
++</project>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/misc.xml	(date 1612615860956)
++++ .idea/misc.xml	(date 1612615860956)
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="ExternalStorageConfigurationManager" enabled="true" />
++  <component name="MavenProjectsManager">
++    <option name="originalFiles">
++      <list>
++        <option value="$PROJECT_DIR$/pom.xml" />
++      </list>
++    </option>
++  </component>
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="false" project-jdk-name="11" project-jdk-type="JavaSDK">
++    <output url="file://$PROJECT_DIR$/out" />
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/vcs.xml	(date 1613084766794)
++++ .idea/vcs.xml	(date 1613084766794)
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings">
++    <mapping directory="$PROJECT_DIR$" vcs="Git" />
++  </component>
++</project>
+\ No newline at end of file
+Index: ApplineSelenium.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- ApplineSelenium.iml	(date 1612613527388)
++++ ApplineSelenium.iml	(date 1612613527388)
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<module type="JAVA_MODULE" version="4" />
+\ No newline at end of file
+Index: .idea/.gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/.gitignore	(date 1613084739140)
++++ .idea/.gitignore	(date 1613084739140)
+@@ -0,0 +1,2 @@
++# Default ignored files
++/workspace.xml
+\ No newline at end of file
+Index: .idea/dictionaries/Deri.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/dictionaries/Deri.xml	(date 1612615836971)
++++ .idea/dictionaries/Deri.xml	(date 1612615836971)
+@@ -0,0 +1,3 @@
++<component name="ProjectDictionaryState">
++  <dictionary name="Deri" />
++</component>
+\ No newline at end of file
+diff --git target/test-classes/SberTest.class target/test-classes/SberTest.class
+new file mode 100644
+index 0000000000000000000000000000000000000000..c561c1ddb4347b099d0c8c510a8d3c914835fdd2
+GIT binary patch
+literal 8574
+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
+In~IA6A6c$p5C8xG
+
+diff --git target/classes/META-INF/ApplineSelenium.kotlin_module target/classes/META-INF/ApplineSelenium.kotlin_module
+new file mode 100644
+index 0000000000000000000000000000000000000000..a49347afef10a9b5f95305e1058ba36adec7d6dd
+GIT binary patch
+literal 16
+Rc${NkU|?ooU|@t|0RRA102TlM
+
