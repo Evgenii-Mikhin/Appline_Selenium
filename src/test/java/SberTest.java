@@ -7,21 +7,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 
-public class SberTest {
-
-    private WebDriver driver;
-    private String Url;
-
-    @Before
-    public void setUp() throws Exception {
-        System.setProperty("webdriver.gecko.driver", "C:\\Users\\Deri\\IdeaProjects\\UdemyMaven\\Drivers\\geckodriver.exe");
-        System.setProperty("webdriver.chrome.driver", "C:\\Users\\Deri\\IdeaProjects\\UdemyMaven\\Drivers\\chromedriver.exe");
-        driver = new ChromeDriver();
-        //driver = new FirefoxDriver();
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
-        driver.manage().window().maximize();
-        Url = "http://www.sberbank.ru/ru/person";
-    }
+public class SberTest extends BaseTest{
 
     @Test
 
@@ -129,24 +115,8 @@ public class SberTest {
         Assert.assertEquals("При заполнении данных произошла ошибка", textErrorMessage.getText());
     }
 
-    @After
-   public void tearDown() throws Exception {
-        driver.quit();
-    }
 
-// Методы отчистки и заполнения текстовых полей
-    private void fillField(WebElement element, String value){
-        element.clear();
-        element.sendKeys(value);
-    }
-    private void fillFields(By locator, String value) {
-        driver.findElement(locator).clear();
-        driver.findElement(locator).sendKeys(value);
-    }
-// Метод скрола к элементу (Джаваскрипт)
-    private void goElement(WebElement element) {
-            ((JavascriptExecutor) driver).executeScript("return arguments[0].scrollIntoView(true);", element);
-    }
+
 
 }
 
